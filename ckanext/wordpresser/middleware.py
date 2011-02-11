@@ -66,7 +66,7 @@ class WordpresserMiddleware(object):
             ckan_etree = fromstring(ckan_resp.body)
 
         # append WP nav onto CKAN nav
-        wp_nav = wp_etree.xpath('//div[@class="menu"]/ul/*')
+        wp_nav = wp_etree.xpath('//div[contains(@class,"menu")]/ul/li')
         ckan_etree_nav = ckan_etree.xpath('//div[@class="menu"]/ul')
         if ckan_etree_nav:
             ckan_etree_nav[0].extend(wp_nav)
