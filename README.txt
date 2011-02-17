@@ -28,7 +28,5 @@ Installation
 TODO
 ====
 
-* Implement as a GenshiStreamFilter plugin, so we aren't parsing the
-  CKAN template twice
 * Cache the Wordpress nav so we aren't round-tripping to a proxy
   server on each request
