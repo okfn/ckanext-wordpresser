@@ -59,7 +59,6 @@ class Wordpresser(SingletonPlugin):
         wp_resp.decode_content()
         wp_etree = fromstring(wp_resp.body)
 
-        #import pdb; pdb.set_trace()
         # append WP nav onto CKAN nav
         wp_nav = wp_etree.xpath('//div[contains(@class,"menu")]/ul/li')
         wp_nav = "".join([tostring(item) for item in wp_nav])
@@ -83,9 +82,13 @@ class Wordpresser(SingletonPlugin):
                 proxy_content = wp_etree.xpath(
                     '//div[@id="content"]')[0]
                 proxy_content = tostring(proxy_content)
+                proxy_title = tostring(wp_etree.xpath('//title')[0])
             if proxy_content:
                 stream = stream | Transformer('//div[@id="content"]')\
                          .replace(HTML(proxy_content))
+                stream = stream | Transformer('//title')\
+                         .replace(HTML(proxy_title))
+                
 
         def replace_host(name, event):
             attrs = event[1][1]
