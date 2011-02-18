@@ -48,7 +48,7 @@ class Wordpresser(SingletonPlugin):
             environ['PATH_INFO'] = ''
             proxy_url = wp_resp.location
             req = Request(environ)
-        #request.environ['PATH_INFO'] = path_info
+
         if wp_resp.status_int == 500:
             pass  # validation errors etc
         if wp_resp.status_int in [301, 302]:
@@ -88,8 +88,8 @@ class Wordpresser(SingletonPlugin):
                          .replace(HTML(proxy_content))
                 stream = stream | Transformer('//title')\
                          .replace(HTML(proxy_title))
-                
-
+        # finally, replace all references to the WP hostname with our
+        # own hostname
         def replace_host(name, event):
             attrs = event[1][1]
             return attrs.get(name).replace(proxy_host, "/")
