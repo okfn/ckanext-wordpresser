@@ -4,8 +4,6 @@ log = logging.getLogger(__name__)
 from lxml.html import tostring, fromstring
 from webob import Request
 import paste.proxy
-from pylons.controllers.util import redirect
-from pylons import request
 from genshi.filters.transform import Transformer
 from genshi.input import HTML
 
@@ -28,6 +26,8 @@ class Wordpresser(SingletonPlugin):
             raise WordpresserException(msg)
 
     def filter(self, stream):
+        from pylons.controllers.util import redirect
+        from pylons import request
         original_response = request.environ.get('pylons.original_response')
         original_req = request.environ.get('pylons.original_request')
         proxy_host = self.config.get('wordpresser.proxy_host')
@@ -61,7 +61,7 @@ class Wordpresser(SingletonPlugin):
 
         # append WP nav onto CKAN nav
         wp_nav = wp_etree.xpath('//div[contains(@class,"menu")]/ul/li')
-        wp_nav = "".join([tostring(item) for item in wp_nav])
+        wp_nav = "".join([tostring(item, encoding=unicode) for item in wp_nav])
         if wp_nav.strip():
             stream = stream | Transformer('//div[@class="menu"]/ul')\
                      .append(HTML(wp_nav))
@@ -77,17 +77,22 @@ class Wordpresser(SingletonPlugin):
                 proxy_content = wp_error[0]
                 proxy_content.tag = "div"
                 proxy_content.attrib['id'] = "content"
-                proxy_content = tostring(proxy_content)
+                proxy_content = tostring(proxy_content,
+                                         encoding=unicode)
             else:
                 proxy_content = wp_etree.xpath(
                     '//div[@id="content"]')[0]
-                proxy_content = tostring(proxy_content)
-                proxy_title = tostring(wp_etree.xpath('//title')[0])
+                proxy_content = tostring(proxy_content,
+                                         encoding=unicode)
+                proxy_title = tostring(wp_etree.xpath('//title')[0],
+                                       encoding=unicode)
             if proxy_content:
                 stream = stream | Transformer('//div[@id="content"]')\
                          .replace(HTML(proxy_content))
                 stream = stream | Transformer('//title')\
                          .replace(HTML(proxy_title))
+                original_response.status = wp_resp.status
+                original_response.status_int = wp_resp.status_int
         # finally, replace all references to the WP hostname with our
         # own hostname
         def replace_host(name, event):
