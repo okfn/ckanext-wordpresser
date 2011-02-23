@@ -31,7 +31,8 @@ class Wordpresser(SingletonPlugin):
         original_response = request.environ.get('pylons.original_response')
         original_req = request.environ.get('pylons.original_request')
         proxy_host = self.config.get('wordpresser.proxy_host')
-
+        if request.method not in ['GET', 'POST']:
+            return stream
         # grab the WP page -- we always need it for the nav, at least,
         # and optionally for content when we get a 404 from CKAN.
         environ = original_req and original_req.environ or request.environ
