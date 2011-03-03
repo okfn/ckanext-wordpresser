@@ -5,6 +5,7 @@ from paste.wsgilib import encode_unicode_app_iter
 from pylons.util import call_wsgi_application
 from pylons import config
 from httpencode.wrappers import FileAppIterWrapper
+from pylons.decorators.cache import beaker_cache
 
 from ckan.lib.base import render
 
@@ -37,7 +38,11 @@ class WordpresserMiddleware(object):
         content = content.decode(charset)
         if environ['REQUEST_METHOD'] in ['GET', 'POST']:
             # get wordpress page content
-            wp_status, wp_content = self.get_wordpress_content(environ)
+            print "Aaaaaaaaaaaaaaaaa"
+            wp_status, wp_content = self.get_wordpress_content(
+                environ,
+                environ['PATH_INFO'])
+            print "BbbbbbbbbbbbB"
             environ[STATUS_KEY] = wp_status
             content = self.replace_relevant_bits(content,
                                                   wp_content,
@@ -119,7 +124,8 @@ class WordpresserMiddleware(object):
         return content.replace(proxy_host, "/")
 
     @classmethod
-    def get_wordpress_content(cls, environ):
+    @beaker_cache(key='path', expire=60)
+    def get_wordpress_content(cls, environ, path):
         # grab the WP page -- we always need it for the nav, at least,
         # and optionally for content when we get a 404 from CKAN.
         from pylons.controllers.util import redirect

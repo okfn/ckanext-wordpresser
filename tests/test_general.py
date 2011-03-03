@@ -45,7 +45,9 @@ class TestWordpresser:
     def test_500_in_ckan(self):
         environ = {'PATH_INFO': 'about',
                    'REQUEST_METHOD': 'GET'}
-        wp_status, wp_content = middleware.get_wordpress_content(environ)
+        wp_status, wp_content = middleware.get_wordpress_content(
+            environ,
+            'about')
         repl = middleware.replace_relevant_bits("some_error",
                                                 wp_content,
                                                 "500 oops",
