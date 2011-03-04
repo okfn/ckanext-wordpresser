@@ -27,3 +27,10 @@ two to the primary navigation
 
 4. Marvel at the appearance of Wordpress pages within your CKAN instance
 
+
+Running tests
+-------------
+
+With your ckan virtualenv activated, run the following command from within pyenv/src/ckan:
+
+    nosetests --ckan ../ckanext-wordpresser/tests
