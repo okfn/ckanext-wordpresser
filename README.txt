@@ -4,7 +4,8 @@ content area) in your CKAN site.
 For example, if you make a new Page in your Wordpress site called
 "Resources", that will be appended to your CKAN navigation.
 
-WARNING: this is a rough, unparameterized first draft.
+Any page that would normally result in a 404 from CKAN will then be
+checked for existence in Wordpress before returning to the user.
 
 Installation
 ============
@@ -15,7 +16,8 @@ Installation
 
     $ pip install -e  hg+https://bitbucket.org/sebbacon/ckanext-wordpresser#package=/ckanext-wordpresser
 
-2. Set up a Wordpress site (e.g. at wordpress.com) and add a Page or two
+2. Set up a Wordpress site (e.g. at wordpress.com) and add a Page or
+two to the primary navigation
 
 3. Edit your development.ini (or similar) with:
 
@@ -25,8 +27,3 @@ Installation
 
 4. Marvel at the appearance of Wordpress pages within your CKAN instance
 
-TODO
-====
-
-* Cache the Wordpress nav so we aren't round-tripping to a proxy
-  server on each request
