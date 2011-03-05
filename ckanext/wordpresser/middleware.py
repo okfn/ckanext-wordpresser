@@ -38,11 +38,9 @@ class WordpresserMiddleware(object):
         content = content.decode(charset)
         if environ['REQUEST_METHOD'] in ['GET', 'POST']:
             # get wordpress page content
-            print "Aaaaaaaaaaaaaaaaa"
             wp_status, wp_content = self.get_wordpress_content(
                 environ,
                 environ['PATH_INFO'])
-            print "BbbbbbbbbbbbB"
             environ[STATUS_KEY] = wp_status
             content = self.replace_relevant_bits(content,
                                                   wp_content,
@@ -86,8 +84,12 @@ class WordpresserMiddleware(object):
         # append WP nav onto CKAN nav
         wp_nav = wp_etree.xpath('//div[contains(@class,"menu")]/ul/li')
         if wp_nav:
-            menu = content_etree.xpath('//div[@class="menu"]/ul')[0]
-            menu.extend(wp_nav)
+            try:
+                menu = content_etree.xpath('//div[@class="menu"]/ul')[0]
+                menu.extend(wp_nav)
+            except IndexError:
+                # no nav in the page from wordpress
+                pass
         # insert WP content into CKAN content area, if required
         if original_status_int >= 400:
             proxy_title = None

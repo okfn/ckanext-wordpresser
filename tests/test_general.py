@@ -89,8 +89,14 @@ class TestWordpresser:
         assert 'wp-nav-1' in response.body
         assert 'Wobsnasm' in response.body
 
-
-#both 404s
-#redirect
-#utf
-#invalid wordpress
+    def test_no_nav_in_ckan(self):
+        environ = {'PATH_INFO': 'about',
+                   'REQUEST_METHOD': 'GET'}
+        wp_status, wp_content = middleware.get_wordpress_content(
+            environ,
+            'about')
+        repl = middleware.replace_relevant_bits("not much",
+                                                wp_content,
+                                                "200 OK",
+                                                wp_status)
+        assert repl == "<p>not much</p>", repl
