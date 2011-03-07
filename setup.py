@@ -23,7 +23,8 @@ setup(
 	install_requires=[
 		# -*- Extra requirements: -*-
                 'lxml',
-                'webob'
+                'webob',
+                'httpencode'
 	],
 	entry_points=\
 	"""
