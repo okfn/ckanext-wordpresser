@@ -88,6 +88,10 @@ class MockHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                              'http://localhost:6969/exists_in_wordpress')
             self.end_headers()
             content = ""
+        elif "notmodified" in self.path:
+            self.send_response(304)
+            self.end_headers()
+            content = ""
         else:
             self.send_response(200)
             self.end_headers()

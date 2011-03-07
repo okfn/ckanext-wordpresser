@@ -27,36 +27,38 @@ class WordpresserMiddleware(object):
         # get our content
         status, headers, app_iter, exc_info = call_wsgi_application(
             self.app, environ, catch_exc_info=True)
-        # make sure it's unicode
-        content = FileAppIterWrapper(app_iter).read()
-        charset = "utf-8"
-        for k, v in headers:
-            if k.lower() == "content-type":
-                charset_pos = v.find("charset")
-                if charset_pos > -1:
-                    charset = v[charset_pos + 8:]
-        content = content.decode(charset)
-        if environ['REQUEST_METHOD'] in ['GET', 'POST']:
+        if environ['REQUEST_METHOD'] in ['GET', 'POST'] \
+               and not status.startswith('304 '):
+            # make sure it's unicode
+            content = FileAppIterWrapper(app_iter).read()
+            charset = "utf-8"
+            for k, v in headers:
+                if k.lower() == "content-type":
+                    charset_pos = v.find("charset")
+                    if charset_pos > -1:
+                        charset = v[charset_pos + 8:]
+            content = content.decode(charset)
             # get wordpress page content
             wp_status, wp_content = self.get_wordpress_content(
                 environ,
                 environ['PATH_INFO'])
             environ[STATUS_KEY] = wp_status
             content = self.replace_relevant_bits(content,
-                                                  wp_content,
-                                                  status,
-                                                  wp_status)
+                                                 wp_content,
+                                                 status,
+                                                 wp_status)
             headers = [(k, v) for k, v in headers \
                        if k != "Content-Length"]
             headers.append(('Content-Length',
                             str(len(content.encode('utf-8')))
                             ))
 
-        if not status.startswith("200"):
-            if not wp_status.startswith("404"):
-                status = wp_status
+            if not status.startswith("200"):
+                if not wp_status.startswith("404"):
+                    status = wp_status
+            app_iter = [content]
         start_response(status, headers, exc_info)
-        return encode_unicode_app_iter([content],
+        return encode_unicode_app_iter(app_iter,
                                        encoding="utf-8")
 
     @classmethod
@@ -72,6 +74,9 @@ class WordpresserMiddleware(object):
         wp_status_int = int(wp_status[:3])
         original_status_int = int(original_status[:3])
         proxy_host = config.get('wordpresser.proxy_host')
+        if wp_status_int == 404 and original_status_int == 404:
+            # Allow Error middleware to do its thing
+            return original_content
         wp_etree = fromstring(wp_content)
         if original_status_int < 400:
             content_etree = fromstring(original_content)
@@ -94,10 +99,11 @@ class WordpresserMiddleware(object):
         if original_status_int >= 400:
             proxy_title = None
             proxy_content = None
-            if wp_status_int == 404:
-                pass
-            elif wp_status_int >= 400:
+            if wp_status_int >= 400:
                 # return Wordpress error
+                #
+                # note that this is never 404, as that is
+                # short-circuited above
                 wp_error = wp_etree.xpath('//body[@id="error-page"]')
                 # set Wordpress' error text to be wrapped in our content div
                 proxy_content = wp_error[0]

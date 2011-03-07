@@ -1,4 +1,5 @@
 import httplib
+import re
 
 from ckan.config.middleware import make_app
 from paste.deploy import appconfig
@@ -75,6 +76,10 @@ class TestWordpresser:
     def test_404_in_both_places(self):
         response = self.app._gen_request('GET', '/404', status=404)
         assert 'blah' not in response.body
+        titles = re.findall(r"<title>", response.body)
+        # there was an error to do with Error middleware that meant we
+        # got duplicate page content
+        assert len(titles) == 1, len(titles)
 
     def test_utf8_from_wp(self):
         response = self.app._gen_request('GET', '/utf8_in_wordpress')
@@ -100,3 +105,5 @@ class TestWordpresser:
                                                 "200 OK",
                                                 wp_status)
         assert repl == "<p>not much</p>", repl
+
+       
