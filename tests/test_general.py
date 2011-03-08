@@ -18,7 +18,8 @@ class TestWordpresser:
         config.local_conf['wordpresser.proxy_host'] \
                               = 'http://localhost:6969/'
         wsgiapp = make_app(config.global_conf, **config.local_conf)
-        cls.app = paste.fixture.TestApp(wsgiapp)
+        env = {'HTTP_ACCEPT': 'text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5'}
+        cls.app = paste.fixture.TestApp(wsgiapp, extra_environ=env)
         CreateTestData.create()
         runmockserver()
 
@@ -35,11 +36,11 @@ class TestWordpresser:
 
     def test_post_ok(self):
         url = url_for('about')
-        response = self.app._gen_request('POST', url)
+        response = self.app.post(url)
         assert 'OK' in response.full_status, response
 
     def test_200_transcode(self):
-        response = self.app._gen_request('GET', '/about')
+        response = self.app.get('/about')
         assert 'wp-nav-1' in response.body
         assert 'Wobsnasm' not in response.body
 
@@ -57,24 +58,26 @@ class TestWordpresser:
 
     def test_200_but_500_in_wp_transcode(self):
         url = url_for('license')
-        response = self.app._gen_request('GET', url)
+        response = self.app.get(url)
         assert 'wp-nav-1' not in response.body
         assert 'someerror' not in response.body
 
     def test_404_but_200_in_wp_transcode(self):
         url = url_for('/exists_in_wordpress')
-        response = self.app._gen_request('GET', url)
+        response = self.app.get(url)
         assert 'wp-nav-1' in response.body
         assert 'Wobsnasm' in response.body
 
     def test_404_but_500_in_wp_transcode(self):
         url = url_for('/error_in_wordpress')
-        response = self.app._gen_request('GET', url, status=500)
+        response = self.app.get(url, status=500)
         assert 'wp-nav-1' in response.body
         assert 'whoopsy' in response.body
 
-    def test_404_in_both_places(self):
-        response = self.app._gen_request('GET', '/404', status=404)
+    def test_00_404_in_both_places(self):
+        response = self.app.get('/404',
+                                status=404,
+                                headers={'accept':'text/plain'})
         assert 'blah' not in response.body
         titles = re.findall(r"<title>", response.body)
         # there was an error to do with Error middleware that meant we
@@ -82,15 +85,15 @@ class TestWordpresser:
         assert len(titles) == 1, len(titles)
 
     def test_utf8_from_wp(self):
-        response = self.app._gen_request('GET', '/utf8_in_wordpress')
+        response = self.app.get('/utf8_in_wordpress')
         assert '\xc3\xbe' in response.body
 
     def test_bad_wordpress_markup(self):
-        response = self.app._gen_request('GET', '/notworking')
+        response = self.app.get('/notworking')
         assert "empty" not in response.body
 
     def test_wordpress_redirect(self):
-        response = self.app._gen_request('GET', '/redirect')
+        response = self.app.get('/redirect')
         assert 'wp-nav-1' in response.body
         assert 'Wobsnasm' in response.body
 
@@ -106,4 +109,7 @@ class TestWordpresser:
                                                 wp_status)
         assert repl == "<p>not much</p>", repl
 
-       
+    def test_non_html(self):
+        response = self.app.get('/language.js',
+                                headers={'accept': '*/*'})
+        assert '<p>' not in response.body
