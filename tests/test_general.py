@@ -113,3 +113,8 @@ class TestWordpresser:
         response = self.app.get('/language.js',
                                 headers={'accept': '*/*'})
         assert '<p>' not in response.body
+
+    def test_rss_with_encoding(self):
+        # ensure we don't try to transform XML
+        response = self.app.get('/revision/list?days=1&format=atom')
+        assert response.body.startswith("<?xml")

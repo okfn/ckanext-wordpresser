@@ -42,25 +42,26 @@ class WordpresserMiddleware(object):
             if content_type.startswith("text/html"):
                 content = FileAppIterWrapper(app_iter).read()
                 content = content.decode(charset)
-                # get wordpress page content
-                wp_status, wp_content = self.get_wordpress_content(
-                    environ,
-                    environ['PATH_INFO'])
-                environ[STATUS_KEY] = wp_status
-                content = self.replace_relevant_bits(content,
-                                                     wp_content,
-                                                     status,
-                                                     wp_status)
-                headers = [(k, v) for k, v in headers \
-                           if k != "Content-Length"]
-                headers.append(('Content-Length',
-                                str(len(content.encode('utf-8')))
-                                ))
+                if not content.startswith("<?xml"):  # can't trust content_type
+                    # get wordpress page content
+                    wp_status, wp_content = self.get_wordpress_content(
+                        environ,
+                        environ['PATH_INFO'])
+                    environ[STATUS_KEY] = wp_status
+                    content = self.replace_relevant_bits(content,
+                                                         wp_content,
+                                                         status,
+                                                         wp_status)
+                    headers = [(k, v) for k, v in headers \
+                               if k != "Content-Length"]
+                    headers.append(('Content-Length',
+                                    str(len(content.encode('utf-8')))
+                                    ))
 
-                if not status.startswith("200"):
-                    if not wp_status.startswith("404"):
-                        status = wp_status
-                app_iter = [content]
+                    if not status.startswith("200"):
+                        if not wp_status.startswith("404"):
+                            status = wp_status
+                    app_iter = [content]
         start_response(status, headers, exc_info)
         return encode_unicode_app_iter(app_iter,
                                        encoding="utf-8")
