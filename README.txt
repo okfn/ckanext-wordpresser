@@ -7,6 +7,8 @@ For example, if you make a new Page in your Wordpress site called
 Any page that would normally result in a 404 from CKAN will then be
 checked for existence in Wordpress before returning to the user.
 
+This only works against CKAN 1.3.1 or newer.
+
 Installation
 ============
 
