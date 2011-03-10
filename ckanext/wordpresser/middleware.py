@@ -10,8 +10,6 @@ from pylons.decorators.cache import beaker_cache
 from ckan.lib.base import render
 
 
-STATUS_KEY = 'ckanext.wordpresser.wp_status'
-
 
 class WordpresserMiddleware(object):
     """When we rewrite the content of the page, we also want to reset
@@ -47,7 +45,8 @@ class WordpresserMiddleware(object):
                     wp_status, wp_content = self.get_wordpress_content(
                         environ,
                         environ['PATH_INFO'])
-                    environ[STATUS_KEY] = wp_status
+                    environ['ckanext.wordpresser.wp_status'] = wp_status
+                    environ['ckanext.wordpresser.local_status'] = status
                     content = self.replace_relevant_bits(content,
                                                          wp_content,
                                                          status,
