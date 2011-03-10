@@ -7,7 +7,7 @@ import paste.fixture
 from ckan.tests import conf_dir, url_for, CreateTestData
 
 from ckanext.wordpresser import WordpresserMiddleware as middleware
-from mockwordpress import runmockserver
+from mockwordpress import runmockserver, WP_CONTENT
 
 
 class TestWordpresser:
@@ -74,7 +74,12 @@ class TestWordpresser:
         assert 'wp-nav-1' in response.body
         assert 'whoopsy' in response.body
 
-    def test_00_404_in_both_places(self):
+    def test_unauthorized(self):
+        response = self.app.get('/authorizationgroup/new',)
+        assert response.status == 302
+        assert 'login' in response.header('location')
+
+    def test_404_in_both_places(self):
         response = self.app.get('/404',
                                 status=404,
                                 headers={'accept':'text/plain'})
