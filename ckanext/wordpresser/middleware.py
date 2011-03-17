@@ -10,7 +10,6 @@ from pylons.decorators.cache import beaker_cache
 from ckan.lib.base import render
 
 
-
 class WordpresserMiddleware(object):
     """When we rewrite the content of the page, we also want to reset
     the status code.  This has to be done in middleware.
@@ -40,9 +39,11 @@ class WordpresserMiddleware(object):
                     if charset_pos > -1:
                         charset = v[charset_pos + 8:]
             if content_type.startswith("text/html"):
+                # note we sometimes get "text/html" for xml, hence
+                # extra test below
                 content = FileAppIterWrapper(app_iter).read()
                 content = content.decode(charset)
-                if not content.startswith("<?xml"):  # can't trust content_type
+                if content and not content.startswith("<?xml"):
                     # get wordpress page content
                     wp_status, wp_content = self.get_wordpress_content(
                         environ,
