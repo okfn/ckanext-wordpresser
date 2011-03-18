@@ -2,6 +2,7 @@ from lxml.html import tostring, fromstring
 from webob import Request
 import paste.proxy
 from paste.wsgilib import encode_unicode_app_iter
+from paste.httpexceptions import HTTPMovedPermanently, HTTPFound
 from pylons.util import call_wsgi_application
 from pylons import config
 from httpencode.wrappers import FileAppIterWrapper
@@ -45,25 +46,30 @@ class WordpresserMiddleware(object):
                 content = content.decode(charset)
                 if content and not content.startswith("<?xml"):
                     # get wordpress page content
-                    wp_status, wp_content = self.get_wordpress_content(
-                        environ,
-                        environ['PATH_INFO'])
-                    environ['ckanext.wordpresser.wp_status'] = wp_status
-                    environ['ckanext.wordpresser.local_status'] = status
-                    content = self.replace_relevant_bits(content,
-                                                         wp_content,
-                                                         status,
-                                                         wp_status)
-                    headers = [(k, v) for k, v in headers \
-                               if k != "Content-Length"]
-                    headers.append(('Content-Length',
-                                    str(len(content.encode('utf-8')))
-                                    ))
+                    try:
+                        wp_status, wp_content = self.get_wordpress_content(
+                            environ,
+                            environ['PATH_INFO'])
+                        environ['ckanext.wordpresser.wp_status'] = wp_status
+                        environ['ckanext.wordpresser.local_status'] = status
+                        content = self.replace_relevant_bits(content,
+                                                             wp_content,
+                                                             status,
+                                                             wp_status)
+                        headers = [(k, v) for k, v in headers \
+                                   if k != "Content-Length"]
+                        headers.append(('Content-Length',
+                                        str(len(content.encode('utf-8')))
+                                        ))
 
-                    if not status.startswith("200"):
-                        if not wp_status.startswith("404"):
-                            status = wp_status
-                    app_iter = [content]
+                        if not status.startswith("200"):
+                            if not wp_status.startswith("404"):
+                                status = wp_status
+                        app_iter = [content]
+                    except (HTTPMovedPermanently, HTTPFound), exc:
+                        status = exc.status
+                        content = ""
+                        headers = [('Location', exc.location)]
         start_response(status, headers, exc_info)
         return encode_unicode_app_iter(app_iter,
                                        encoding="utf-8")
