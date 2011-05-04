@@ -33,6 +33,6 @@ setup(
 	entry_points=\
 	"""
         [ckan.plugins]
-	wordpresser=ckanext.wordpresser:Wordpresser
+	wordpresser=ckanext.wordpresser.plugin:Wordpresser
 	""",
 )

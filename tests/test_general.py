@@ -6,7 +6,7 @@ from paste.deploy import appconfig
 import paste.fixture
 from ckan.tests import conf_dir, url_for, CreateTestData
 
-from ckanext.wordpresser import WordpresserMiddleware as middleware
+from ckanext.wordpresser.plugin import WordpresserMiddleware as middleware
 from mockwordpress import runmockserver, WP_CONTENT
 
 
