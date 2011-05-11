@@ -160,7 +160,7 @@ class WordpresserMiddleware(object):
             wp_resp = req.get_response(paste.proxy.Proxy(proxy_url))
             follow = wp_resp.status_int == 301 \
                      and proxy_host in wp_resp.location
-            environ['PATH_INFO'] = ''
+            environ['PATH_INFO'] = '/'
             proxy_url = wp_resp.location
             req = Request(environ)
 
