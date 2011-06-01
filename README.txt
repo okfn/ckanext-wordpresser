@@ -19,16 +19,20 @@ Installation
     $ pip install -e  hg+https://bitbucket.org/okfn/ckanext-wordpresser#egg=ckanext-wordpresser
 
 2. Set up a Wordpress site (e.g. at wordpress.com) and add a Page or
-two to the primary navigation.  Note that this has only been tested
-with Wordpress 3.1 and the Twenty Ten theme.
+   two to the primary navigation.  Note that this has only been tested
+   with Wordpress 3.1 and the Twenty Ten theme.
 
-3. Edit your development.ini (or similar) with:
+3. Ensure Wordpress is set up to use permalinks (e.g. the "Numeric"
+   setting at Settings -> Permalinks)
+
+4. Edit your development.ini (or similar) with:
 
   ::
 
+      ckan.plugins = wordpresser   # and your other plugins...
       wordpresser.proxy_host = http://<yoursite>.wordpress.com/
 
-4. Marvel at the appearance of Wordpress pages within your CKAN instance
+5. Marvel at the appearance of Wordpress pages within your CKAN instance
 
 
 Running tests
