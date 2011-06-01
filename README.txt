@@ -16,7 +16,7 @@ Installation
 
   ::
 
-    $ pip install -e  hg+https://bitbucket.org/okfn/ckanext-wordpresser#package=ckanext-wordpresser
+    $ pip install -e  hg+https://bitbucket.org/okfn/ckanext-wordpresser#egg=ckanext-wordpresser
 
 2. Set up a Wordpress site (e.g. at wordpress.com) and add a Page or
 two to the primary navigation.  Note that this has only been tested
