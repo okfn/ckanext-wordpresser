@@ -19,7 +19,8 @@ Installation
     $ pip install -e  hg+https://bitbucket.org/sebbacon/ckanext-wordpresser#package=/ckanext-wordpresser
 
 2. Set up a Wordpress site (e.g. at wordpress.com) and add a Page or
-two to the primary navigation
+two to the primary navigation.  Note that this has only been tested
+with Wordpress 3.1 and the Twenty Ten theme.
 
 3. Edit your development.ini (or similar) with:
 
