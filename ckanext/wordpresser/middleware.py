@@ -1,4 +1,9 @@
+import logging
+
+log = logging.getLogger(__name__)
+
 from lxml.html import tostring, fromstring
+from lxml.etree import XMLSyntaxError
 from webob import Request
 import paste.proxy
 from paste.wsgilib import encode_unicode_app_iter
@@ -7,6 +12,8 @@ from pylons.util import call_wsgi_application
 from pylons import config
 from httpencode.wrappers import FileAppIterWrapper
 from pylons.decorators.cache import beaker_cache
+from socket import gaierror
+from pylons.controllers.util import redirect
 
 from ckan.lib.base import render
 
@@ -90,7 +97,12 @@ class WordpresserMiddleware(object):
         if wp_status_int == 404 and original_status_int == 404:
             # Allow Error middleware to do its thing
             return original_content
-        wp_etree = fromstring(wp_content)
+        try:
+            wp_etree = fromstring(wp_content)
+        except XMLSyntaxError,e:
+            log.error('Error parsing content: %s' % str(e))
+            return original_content
+
         if original_status_int < 400:
             content_etree = fromstring(original_content)
         elif original_status_int >= 500:
@@ -147,17 +159,25 @@ class WordpresserMiddleware(object):
     @classmethod
     @beaker_cache(key='path', expire=60)
     def get_wordpress_content(cls, environ, path):
+
+        from plugin import WordpresserException
+
         # grab the WP page -- we always need it for the nav, at least,
         # and optionally for content when we get a 404 from CKAN.
-        from pylons.controllers.util import redirect
         proxy_host = config.get('wordpresser.proxy_host')
         req = Request(environ)
         req.remove_conditional_headers(remove_encoding=True)
         follow = True
         proxy_url = proxy_host
+
         while follow:
             # deal with redirects internal to Wordpress
-            wp_resp = req.get_response(paste.proxy.Proxy(proxy_url))
+            try:
+                wp_resp = req.get_response(paste.proxy.Proxy(proxy_url))
+            except gaierror,e:
+                msg = "Address-related error: %s (%s)" % (str(e),proxy_host)
+                raise WordpresserException(msg)
+
             follow = wp_resp.status_int == 301 \
                      and proxy_host in wp_resp.location
             environ['PATH_INFO'] = '/'
