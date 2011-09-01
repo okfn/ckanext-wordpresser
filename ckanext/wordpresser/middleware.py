@@ -131,9 +131,10 @@ class WordpresserMiddleware(object):
                 # short-circuited above
                 wp_error = wp_etree.xpath('//body[@id="error-page"]')
                 # set Wordpress' error text to be wrapped in our content div
-                proxy_content = wp_error[0]
-                proxy_content.tag = "div"
-                proxy_content.attrib['id'] = "content"
+                if len(wp_error) > 0:
+                    proxy_content = wp_error[0]
+                    proxy_content.tag = "div"
+                    proxy_content.attrib['id'] = "content"
             else:
                 try:
                     proxy_content = wp_etree.xpath(
