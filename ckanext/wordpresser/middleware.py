@@ -158,7 +158,7 @@ class WordpresserMiddleware(object):
         return content.replace(proxy_host, "/")
 
     @classmethod
-    #@beaker_cache(key='path', expire=360)
+    @beaker_cache(key='path', expire=360)
     def get_wordpress_content(cls, environ, path):
 
         from plugin import WordpresserException
