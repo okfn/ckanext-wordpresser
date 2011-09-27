@@ -2,7 +2,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-from lxml.html import tostring, fromstring
+from lxml.html import tostring, fromstring, parse
 from lxml.etree import XMLSyntaxError
 from webob import Request
 import paste.proxy
@@ -108,7 +108,7 @@ class WordpresserMiddleware(object):
         elif original_status_int >= 500:
             return original_content
         else:
-            basic_template = unicode(render('error_document_template.html'))
+            basic_template = unicode(render('wordpress.html'))
             content_etree = fromstring(basic_template)
 
         # append WP nav onto CKAN nav
@@ -158,7 +158,7 @@ class WordpresserMiddleware(object):
         return content.replace(proxy_host, "/")
 
     @classmethod
-    @beaker_cache(key='path', expire=60)
+    #@beaker_cache(key='path', expire=60)
     def get_wordpress_content(cls, environ, path):
 
         from plugin import WordpresserException
@@ -190,8 +190,11 @@ class WordpresserMiddleware(object):
                 wp_resp.location = wp_resp.location.replace(proxy_host,
                                                             req.host_url + "/")
             redirect(wp_resp.location, code=wp_resp.status_int)
-        wp_resp.decode_content()
+        #wp_resp.decode_content()
         # XXX in fact we currently never get content_encoding passed
         # on by the proxy, which is presumably a bug:
-        body = wp_resp.body.decode(wp_resp.content_encoding or 'utf-8')
+        #import ipdb; ipdb.set_trace()
+        #print wp_resp.body.encode('utf-8')
+        body = wp_resp.body.decode('latin-1')
+        #.decode(wp_resp.content_encoding or 'utf-8')
         return (wp_resp.status, body)
