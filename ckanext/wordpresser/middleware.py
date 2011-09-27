@@ -158,7 +158,7 @@ class WordpresserMiddleware(object):
         return content.replace(proxy_host, "/")
 
     @classmethod
-    #@beaker_cache(key='path', expire=60)
+    #@beaker_cache(key='path', expire=360)
     def get_wordpress_content(cls, environ, path):
 
         from plugin import WordpresserException
@@ -166,6 +166,8 @@ class WordpresserMiddleware(object):
         # grab the WP page -- we always need it for the nav, at least,
         # and optionally for content when we get a 404 from CKAN.
         proxy_host = config.get('wordpresser.proxy_host')
+        #del environ['CONTENT_TYPE']
+        #del environ['HTTP_ACCEPT_CHARSET']
         req = Request(environ)
         req.remove_conditional_headers(remove_encoding=True)
         follow = True
@@ -190,11 +192,8 @@ class WordpresserMiddleware(object):
                 wp_resp.location = wp_resp.location.replace(proxy_host,
                                                             req.host_url + "/")
             redirect(wp_resp.location, code=wp_resp.status_int)
-        #wp_resp.decode_content()
+        wp_resp.decode_content()
         # XXX in fact we currently never get content_encoding passed
         # on by the proxy, which is presumably a bug:
-        #import ipdb; ipdb.set_trace()
-        #print wp_resp.body.encode('utf-8')
-        body = wp_resp.body.decode('latin-1')
-        #.decode(wp_resp.content_encoding or 'utf-8')
+        body = wp_resp.body.decode('utf-8')
         return (wp_resp.status, body)
