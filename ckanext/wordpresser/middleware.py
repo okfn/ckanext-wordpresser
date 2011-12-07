@@ -138,7 +138,7 @@ class WordpresserMiddleware(object):
             else:
                 try:
                     proxy_content = wp_etree.xpath(
-                        '//div[@id="content"]')[0]
+                        '//div[@class="content"]')[0]
                     proxy_title = wp_etree.xpath('//title')[0]
                 except IndexError:
                     # we got something unexpected from Wordpress
@@ -158,7 +158,7 @@ class WordpresserMiddleware(object):
         return content.replace(proxy_host, "/")
 
     @classmethod
-    @beaker_cache(key='path', expire=360)
+    @beaker_cache(key='path', expire=84600)
     def get_wordpress_content(cls, environ, path):
 
         from plugin import WordpresserException
