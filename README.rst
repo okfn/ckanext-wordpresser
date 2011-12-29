@@ -12,11 +12,9 @@ This only works against CKAN 1.3.1 or newer.
 Installation
 ============
 
-1. Install the extension as usual, e.g.
+1. Install the extension as usual, e.g.::
 
-  ::
-
-    $ pip install -e  hg+https://bitbucket.org/okfn/ckanext-wordpresser#egg=ckanext-wordpresser
+    $ pip install -e  git+https://github.com/okfn/ckanext-wordpresser#egg=ckanext-wordpresser
 
 2. Set up a Wordpress site (e.g. at wordpress.com) and add a Page or
    two to the primary navigation.  Note that this has only been tested
@@ -25,12 +23,10 @@ Installation
 3. Ensure Wordpress is set up to use permalinks (e.g. the "Numeric"
    setting at Settings -> Permalinks)
 
-4. Edit your development.ini (or similar) with:
+4. Edit your development.ini (or similar) with::
 
-  ::
-
-      ckan.plugins = wordpresser   # and your other plugins...
-      wordpresser.proxy_host = http://<yoursite>.wordpress.com/
+    ckan.plugins = wordpresser   # and your other plugins...
+    wordpresser.proxy_host = http://<yoursite>.wordpress.com/
 
 5. Marvel at the appearance of Wordpress pages within your CKAN instance
 
@@ -38,6 +34,7 @@ Installation
 Running tests
 -------------
 
-With your ckan virtualenv activated, run the following command from within pyenv/src/ckan:
+With your ckan virtualenv activated, run the following command from within pyenv/src/ckan::
 
-    nosetests --ckan ../ckanext-wordpresser/tests
+  nosetests --ckan ../ckanext-wordpresser/tests
+
