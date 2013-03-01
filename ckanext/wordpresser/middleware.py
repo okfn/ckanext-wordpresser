@@ -115,7 +115,7 @@ class WordpresserMiddleware(object):
         wp_nav = wp_etree.xpath('//div[contains(@class,"menu")]/ul/li')
         if wp_nav:
             try:
-                menu = content_etree.xpath('//div[@class="menu"]/ul')[0]
+                menu = content_etree.xpath('//ul[@class="menu-main"]')[0]
                 menu.extend(wp_nav)
             except IndexError:
                 # no nav in the page from wordpress
